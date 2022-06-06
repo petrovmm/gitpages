@@ -1,0 +1,36 @@
+name: Publish on GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.2.0
+        with:
+          node-version: 14
+        
+      - name: Install dependencies #nodes (no python)
+        run: |
+          npm install
+          npm run build
+      
+      - name: Build html #next ssr
+        run: |
+          make html
+          rm -r build/html/_sources 
+      
+      - name: Next static build and export with HTML/JS minification
+        uses: tsg-iitkgp/next-build-export-action@v1.2.1
+      
+      - name: Publish on GitHub Pages
+        uses: ftnext/action-push-ghpages@v1.0.0-alpha
+        with:
+          build_dir: build/html
+          github_token: ${{ secrets.GITHUB_TOKEN }}
